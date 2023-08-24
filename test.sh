@@ -1,0 +1,1 @@
+(cat file1.wav && sleep 10) | ./encoder_example | ogg123 -
