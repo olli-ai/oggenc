@@ -42,29 +42,31 @@ char *getTimestamp()
 {
   time_t current_time;
   struct tm *time_info;
-  char timeString[9]; // space for "HH:MM:SS\0"
+  char *timeString = (char *)malloc(9); // space for "HH:MM:SS\0"
+
+  if (timeString == NULL)
+  {
+    // Handle memory allocation error
+    return NULL;
+  }
 
   time(&current_time);
   time_info = localtime(&current_time);
 
-  strftime(timeString, sizeof(timeString), "%H:%M:%S", time_info);
+  strftime(timeString, 9, "%H:%M:%S", time_info);
   return timeString;
 }
 
 // FILE *log;
-FILE* initLog(){
-  return fopen("encoder.log","a+");
+FILE *initLog()
+{
+  return fopen("encoder.log", "a+");
 }
 
-// void printLog(FILE *log, )
-
-void closelog(FILE *log){
+void closelog(FILE *log)
+{
   fclose(log);
 }
-
-
-
-
 
 int main()
 {
@@ -208,14 +210,16 @@ int main()
     }
   }
 
-  FILE * log = initLog();
+  FILE *log = initLog();
 
   while (!eos)
   {
     long i;
     long bytes = fread(readbuffer, 1, READ * 2, stdin); /* stereo hardwired here */
 
-    fprintf(log, "%s %ld\n", getTimestamp(), bytes);
+    char *ts = getTimestamp();
+    fprintf(log, "%s %ld\n", ts, bytes);
+    free(ts);
 
     if (bytes == 0)
     {
@@ -299,5 +303,7 @@ int main()
      libvorbis.  They're never freed or manipulated directly */
 
   fprintf(stderr, "Done.\n");
+  fprintf(log, "FINISH\n\n");
+  fclose(log);
   return (0);
 }
