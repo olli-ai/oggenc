@@ -35,8 +35,11 @@
 #include <console.h> /* CodeWarrior's Mac "command-line" support */
 #endif
 
+// #define READ 1024
 #define READ 1024
 signed char readbuffer[READ * 4 + 44]; /* out of the data segment, not the stack */
+
+char ts[9];
 
 char *getTimestamp()
 {
@@ -55,6 +58,18 @@ char *getTimestamp()
 
   strftime(timeString, 9, "%H:%M:%S", time_info);
   return timeString;
+}
+
+void fillTimestamp(char *s)
+{
+  time_t current_time;
+  struct tm *time_info;
+
+  time(&current_time);
+  time_info = localtime(&current_time);
+
+  strftime(s, 9, "%H:%M:%S", time_info);
+  return;
 }
 
 // FILE *log;
@@ -217,9 +232,10 @@ int main()
     long i;
     long bytes = fread(readbuffer, 1, READ * 2, stdin); /* stereo hardwired here */
 
-    char *ts = getTimestamp();
-    fprintf(log, "%s %ld\n", ts, bytes);
-    free(ts);
+    // char *ts = getTimestamp();
+    fillTimestamp(ts);
+    fprintf(log, "%s Read %ld\n", ts, bytes);
+    // free(ts);
 
     if (bytes == 0)
     {
@@ -253,6 +269,9 @@ int main()
 
       /* tell the library how much we actually submitted */
       vorbis_analysis_wrote(&vd, i);
+
+      fillTimestamp(ts);
+      fprintf(log, "%s vorbis_analysis_wrote %ld\n", ts, i);
     }
 
     /* vorbis does some data preanalysis, then divvies up blocks for
@@ -261,12 +280,17 @@ int main()
     while (vorbis_analysis_blockout(&vd, &vb) == 1)
     {
 
+      fillTimestamp(ts);
+      fprintf(log, "%s vorbis_analysis_blockout %i\n", ts, vb.pcmend);
+
       /* analysis, assume we want to use bitrate management */
       vorbis_analysis(&vb, NULL);
       vorbis_bitrate_addblock(&vb);
 
       while (vorbis_bitrate_flushpacket(&vd, &op))
       {
+        fillTimestamp(ts);
+        fprintf(log, "%s vorbis_bitrate_flushpacket %ld\n", ts, op.bytes);
 
         /* weld the packet into the bitstream */
         ogg_stream_packetin(&os, &op);
@@ -275,6 +299,10 @@ int main()
         while (!eos)
         {
           int result = ogg_stream_pageout(&os, &og);
+
+          fillTimestamp(ts);
+          fprintf(log, "%s ogg_stream_pageout %ld\n", ts, og.header_len + og.body_len);
+
           // int result = ogg_stream_flush(&os, &og);
           if (result == 0)
             break;
