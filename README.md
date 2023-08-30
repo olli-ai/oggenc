@@ -7,7 +7,9 @@ https://lists.xiph.org/pipermail/vorbis/2002-August/021175.html
 https://www.xiph.org/vorbis/doc/libvorbis/vorbis_analysis_buffer.html  
 https://www.xiph.org/vorbis/doc/libvorbis/vorbis_analysis_blockout.html  
 https://www.xiph.org/vorbis/doc/libvorbis/vorbis_block.html  
-
+https://www.xiph.org/ogg/doc/libogg/reference.html  
+https://www.xiph.org/ogg/doc/libogg/ogg_stream_pageout.html  
+https://www.xiph.org/vorbis/doc/libvorbis/reference.html  
 
 Build: ./build.sh  
 Run test: ./test.sh  

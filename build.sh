@@ -1,1 +1,1 @@
-gcc encoder_example.c -o encoder_example -lvorbisenc -lvorbisfile -lvorbis -logg -lm
+gcc encoder_example.c -o enc -lvorbisenc -lvorbisfile -lvorbis -logg -lm

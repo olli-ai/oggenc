@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 #include <time.h>
 #include <math.h>
 #include <vorbis/vorbisenc.h>
@@ -228,8 +227,6 @@ int main()
 
   FILE *log = initLog();
 
-  bool ended = false;
-
   while (!eos)
   {
     long i;
@@ -250,16 +247,6 @@ int main()
 
       fillTimestamp(ts);
       fprintf(log, "%s vorbis_analysis_wrote %d\n", ts, 0);
-
-      if (ended)
-      {
-        fprintf(log, "ERROR");
-        break;
-      }
-      else
-      {
-        ended = true;
-      }
     }
     else
     {
@@ -305,32 +292,32 @@ int main()
 
       while (vorbis_bitrate_flushpacket(&vd, &op))
       {
-      fillTimestamp(ts);
-      fprintf(log, "%s vorbis_bitrate_flushpacket %ld\n", ts, op.bytes);
-
-      /* weld the packet into the bitstream */
-      ogg_stream_packetin(&os, &op);
-
-      /* write out pages (if any) */
-      while (!eos)
-      {
-        int result = ogg_stream_pageout(&os, &og);
-        // int result = ogg_stream_flush(&os, &og);
-        if (result == 0)
-          break;
-
         fillTimestamp(ts);
-        fprintf(log, "%s ogg_stream_pageout %ld\n", ts, og.header_len + og.body_len);
+        fprintf(log, "%s vorbis_bitrate_flushpacket %ld\n", ts, op.bytes);
 
-        fwrite(og.header, 1, og.header_len, stdout);
-        fwrite(og.body, 1, og.body_len, stdout);
+        /* weld the packet into the bitstream */
+        ogg_stream_packetin(&os, &op);
 
-        /* this could be set above, but for illustrative purposes, I do
-           it here (to show that vorbis does know where the stream ends) */
+        /* write out pages (if any) */
+        while (!eos)
+        {
+          int result = ogg_stream_pageout(&os, &og);
+          // int result = ogg_stream_flush(&os, &og);
+          if (result == 0)
+            break;
 
-        if (ogg_page_eos(&og))
-          eos = 1;
-      }
+          fillTimestamp(ts);
+          fprintf(log, "%s ogg_stream_pageout %ld\n", ts, og.header_len + og.body_len);
+
+          fwrite(og.header, 1, og.header_len, stdout);
+          fwrite(og.body, 1, og.body_len, stdout);
+
+          /* this could be set above, but for illustrative purposes, I do
+             it here (to show that vorbis does know where the stream ends) */
+
+          if (ogg_page_eos(&og))
+            eos = 1;
+        }
       }
     }
   }

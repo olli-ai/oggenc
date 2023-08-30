@@ -1,1 +1,1 @@
-(cat ./data/a.wav && sleep 4) | ./encoder_example | ogg123 -
+(cat ./data/a.wav && sleep 4) | ./enc | ogg123 -
